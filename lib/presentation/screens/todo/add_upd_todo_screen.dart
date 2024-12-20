@@ -1,9 +1,12 @@
 
-import 'package:flutter/material.dart'; 
-import 'package:hooks_riverpod/hooks_riverpod.dart'; 
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart'; 
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:todo_mvvm/core/router/router.dart'; 
 
 import 'package:todo_mvvm/domain/entities/item.dart';
 import 'package:todo_mvvm/viewmodels/item_list_view_model.dart';
+import 'package:uuid/uuid.dart';
 
 class AddUpdateTodoScreen extends ConsumerWidget {
   final Item? item; // If `item` is null, we're adding a new item.
@@ -42,21 +45,24 @@ class AddUpdateTodoScreen extends ConsumerWidget {
                   final viewModel = ref.read(itemListViewModelProvider.notifier);
 
                   if (item == null) {
-                    // Add new item
-                    viewModel.addItem(Item(
-                      id: '', // Let Firestore generate the ID
-                      title: title,
-                      description: description,
-                    ));
-                  } else {
-                    // Update existing item
-                    viewModel.updateItem(item!.copyWith(
-                      title: title,
-                      description: description,
-                    ));
-                  }
+  // Generate a unique ID
+  final newItem = Item(
+    id: const Uuid().v4(), // Generate a unique ID using the uuid package
+    title: title,
+    description: description,
+  );
 
-                  Navigator.pop(context); // Go back to the main screen
+  viewModel.addItem(newItem);
+} else {
+  // Update existing item
+  final updatedItem = item!.copyWith(
+    title: title,
+    description: description,
+  );
+  viewModel.updateItem(updatedItem);
+}
+
+                 context.go("/main");
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Title and description cannot be empty.')),

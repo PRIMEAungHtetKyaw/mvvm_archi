@@ -1,35 +1,47 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart'; 
+import '../data/local/database.dart';
+import '../data/repositories/drift_item_repository.dart'; 
 import '../data/repositories/item_repository.dart';
 import '../domain/entities/item.dart';
 import '../domain/repositories/item_repository.dart';
 
- 
 class ItemListViewModel extends AsyncNotifier<List<Item>> {
-  late final ItemRepository _itemRepository;
+  late final ItemRepository _remoteRepository;
+  late final ItemRepository _localRepository;
 
   @override
   Future<List<Item>> build() async {
-    _itemRepository = ref.read(itemRepositoryProvider); // Use your DI setup
-    return fetchItems(); // Initial fetch
+    _remoteRepository = ref.read(remoteItemRepositoryProvider);
+    _localRepository = ref.read(localItemRepositoryProvider);
+
+    await _syncFromFirestore(); // Sync Firestore data to Drift
+    return fetchItems();
   }
 
   Future<List<Item>> fetchItems() async {
-    state = const AsyncLoading(); // Set loading state
+    state = const AsyncLoading();
     try {
-      final items = await _itemRepository.fetchItems();
-      state = AsyncData(items); // Fetch successful
+      // Fetch data from the local repository (Drift)
+      final items = await _localRepository.fetchItems();
+      state = AsyncData(items);
       return items;
     } catch (e, stackTrace) {
-      state = AsyncError(e, stackTrace); // Fetch failed
+      state = AsyncError(e, stackTrace);
       return [];
     }
   }
 
   Future<void> addItem(Item item) async {
     try {
-      await _itemRepository.addItem(item);
-      await fetchItems(); // Refresh after adding
+      // Add to local cache (Drift)
+      await _localRepository.addItem(item);
+
+      // Push the change to Firestore
+      await _remoteRepository.addItem(item);
+
+      await fetchItems(); // Refresh UI
     } catch (e, stackTrace) {
       state = AsyncError(e, stackTrace);
     }
@@ -37,8 +49,13 @@ class ItemListViewModel extends AsyncNotifier<List<Item>> {
 
   Future<void> deleteItem(String id) async {
     try {
-      await _itemRepository.deleteItem(id);
-      await fetchItems(); // Refresh after deletion
+      // Delete from local cache (Drift)
+      await _localRepository.deleteItem(id);
+
+      // Push the deletion to Firestore
+      await _remoteRepository.deleteItem(id);
+
+      await fetchItems(); // Refresh UI
     } catch (e, stackTrace) {
       state = AsyncError(e, stackTrace);
     }
@@ -46,19 +63,46 @@ class ItemListViewModel extends AsyncNotifier<List<Item>> {
 
   Future<void> updateItem(Item item) async {
     try {
-      await _itemRepository.updateItem(item); // Call repository to update item
-      await fetchItems(); // Refresh after updating
+      // Update local cache (Drift)
+      await _localRepository.updateItem(item);
+
+      // Push the update to Firestore
+      await _remoteRepository.updateItem(item);
+
+      await fetchItems(); // Refresh UI
     } catch (e, stackTrace) {
       state = AsyncError(e, stackTrace);
     }
   }
+
+  Future<void> _syncFromFirestore() async {
+  try {
+    // Fetch remote data from Firestore
+    final remoteItems = await _remoteRepository.fetchItems();
+
+    // Sync Firestore data to local database (Drift)
+    for (final item in remoteItems) {
+      await _localRepository.addItem(item);
+    }
+  } catch (e) {
+    // Handle offline or error case
+    print('Error syncing from Firestore: $e');
+  }
+}
 }
 
 // Define the provider for ItemListViewModel
 final itemListViewModelProvider =
     AsyncNotifierProvider<ItemListViewModel, List<Item>>(ItemListViewModel.new);
+final databaseProvider = Provider<AppDatabase>((ref) => AppDatabase());
 
-// Define the repository provider
-final itemRepositoryProvider = Provider<ItemRepository>((ref) {
-  return FirestoreItemRepository(FirebaseFirestore.instance);
+// Drift repository for local caching
+final localItemRepositoryProvider = Provider<ItemRepository>((ref) {
+  final database = ref.read(databaseProvider);
+  return DriftItemRepository(database);
+});
+
+// Firestore repository for remote operations
+final remoteItemRepositoryProvider = Provider<ItemRepository>((ref) {
+  return FirestoreItemRepository(FirebaseFirestore.instance, FirebaseAuth.instance);
 });

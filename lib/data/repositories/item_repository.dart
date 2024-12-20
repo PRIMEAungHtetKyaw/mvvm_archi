@@ -1,16 +1,27 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../domain/entities/item.dart';
 import '../../domain/repositories/item_repository.dart';
 
 class FirestoreItemRepository implements ItemRepository {
   final FirebaseFirestore _firestore;
+  final FirebaseAuth _auth;
 
-  FirestoreItemRepository(this._firestore);
+  FirestoreItemRepository(this._firestore, this._auth);
+
+  // Helper to get the current user's collection
+  CollectionReference get _userItemsCollection {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception('No user is currently logged in.');
+    }
+    return _firestore.collection('users').doc(user.uid).collection('items');
+  }
 
   @override
   Future<List<Item>> fetchItems() async {
-    final snapshot = await _firestore.collection('items').get();
+    final snapshot = await _userItemsCollection.get();
     return snapshot.docs.map((doc) {
       return Item(
         id: doc.id,
@@ -22,7 +33,7 @@ class FirestoreItemRepository implements ItemRepository {
 
   @override
   Future<void> addItem(Item item) async {
-    await _firestore.collection('items').add({
+    await _userItemsCollection.doc(item.id).set({
       'title': item.title,
       'description': item.description,
     });
@@ -30,12 +41,12 @@ class FirestoreItemRepository implements ItemRepository {
 
   @override
   Future<void> deleteItem(String id) async {
-    await _firestore.collection('items').doc(id).delete();
+    await _userItemsCollection.doc(id).delete();
   }
 
   @override
   Future<void> updateItem(Item item) async {
-    await _firestore.collection('items').doc(item.id).update({
+    await _userItemsCollection.doc(item.id).update({
       'title': item.title,
       'description': item.description,
     });

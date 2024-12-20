@@ -5,7 +5,7 @@ import '../../domain/entities/user.dart' as user_model;
 import '../../domain/repositories/auth_repository.dart';
 
 class FirebaseAuthRepository implements AuthRepository {
-  final  FirebaseAuth _firebaseAuth;
+  final FirebaseAuth _firebaseAuth;
 
   FirebaseAuthRepository(this._firebaseAuth);
 
@@ -39,5 +39,10 @@ class FirebaseAuthRepository implements AuthRepository {
       return user_model.User(email: user.email!);
     }
     return null;
+  }
+
+  Future<String?> getCurrentUserId() async {
+    final user = _firebaseAuth.currentUser;
+    return user?.uid;
   }
 }
