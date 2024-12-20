@@ -1,0 +1,69 @@
+{
+  "project_info": {
+    "project_number": "597432524630",
+    "firebase_url": "https://fir-a-1672c.firebaseio.com",
+    "project_id": "fir-a-1672c",
+    "storage_bucket": "fir-a-1672c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:597432524630:android:a7606b0a1ec99bf61400f7",
+        "android_client_info": {
+          "package_name": "com.ecommerce.superno"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "597432524630-cptfompfg21lvsdeaojmie189v0edmuq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8QWvFWyAgEPlVjBaQVjpH2v3BJ2RiR_o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "597432524630-cptfompfg21lvsdeaojmie189v0edmuq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:597432524630:android:a501f50e3a2de99d1400f7",
+        "android_client_info": {
+          "package_name": "com.prime.todo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "597432524630-cptfompfg21lvsdeaojmie189v0edmuq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8QWvFWyAgEPlVjBaQVjpH2v3BJ2RiR_o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "597432524630-cptfompfg21lvsdeaojmie189v0edmuq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
