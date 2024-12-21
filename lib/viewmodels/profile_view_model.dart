@@ -6,8 +6,7 @@ import '../domain/entities/user.dart';
 import '../domain/repositories/auth_repository.dart';
 import '../domain/repositories/item_repository.dart';
 import '../providers/auth_providers.dart';
-import '../providers/item_providers.dart'; 
-import 'register_view_model.dart';
+import '../providers/item_providers.dart';  
 
 class ProfileViewModel extends AsyncNotifier<User> {
   AuthRepository? _authRepository;
