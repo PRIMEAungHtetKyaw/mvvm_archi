@@ -7,7 +7,7 @@ import 'package:lottie/lottie.dart';
 import 'package:todo_mvvm/core/assets/assets_constants.dart';
 import 'package:todo_mvvm/core/theme/colors.dart';
 import 'package:todo_mvvm/presentation/widgets/common_textfield.dart';
-import 'package:todo_mvvm/viewmodels/register_view_model.dart';
+import 'package:todo_mvvm/providers/auth_providers.dart'; 
 final regEmailController = TextEditingController();
 final regPwdController = TextEditingController();
 final regConfirmPwdController = TextEditingController();

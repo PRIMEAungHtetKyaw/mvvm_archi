@@ -4,13 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart'; 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:todo_mvvm/core/theme/colors.dart';
-import 'package:todo_mvvm/viewmodels/item_list_view_model.dart';
+import 'package:todo_mvvm/providers/item_providers.dart'; 
 
 import '../../widgets/confirm_dialog.dart';
 
-import 'dart:math';
-import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'dart:math'; 
 class MainScreen extends ConsumerWidget {
   const MainScreen({super.key});
 
@@ -29,7 +27,7 @@ class MainScreen extends ConsumerWidget {
       ).withOpacity(0.2); // Set slight transparency for softer colors
     }
 
-    Future<void> _refreshItems() async {
+    Future<void> refreshItems() async {
       // Trigger fetchItems in ViewModel to refresh the list
       await ref.read(itemListViewModelProvider.notifier).fetchItems();
     }
@@ -51,7 +49,7 @@ class MainScreen extends ConsumerWidget {
       ),
       body: itemListState.when(
         data: (items) => RefreshIndicator(
-          onRefresh: _refreshItems,
+          onRefresh: refreshItems,
          child: items.isEmpty
               ? Center(
                   child: Column(

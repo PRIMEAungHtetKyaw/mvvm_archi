@@ -6,7 +6,7 @@ part 'item_dao.g.dart';
 
 @DriftAccessor(tables: [Items])
 class ItemDao extends DatabaseAccessor<AppDatabase> with _$ItemDaoMixin {
-  ItemDao(AppDatabase db) : super(db);
+  ItemDao(super.db);
 
   Future<List<ItemEntity>> getAllItems() => select(items).get();
 

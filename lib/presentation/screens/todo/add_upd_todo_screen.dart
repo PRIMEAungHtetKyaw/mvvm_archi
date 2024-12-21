@@ -1,12 +1,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart'; 
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:lottie/lottie.dart'; 
+import 'package:hooks_riverpod/hooks_riverpod.dart'; 
 
 import 'package:todo_mvvm/domain/entities/item.dart';
 import 'package:todo_mvvm/presentation/widgets/common_textfield.dart';
-import 'package:todo_mvvm/viewmodels/item_list_view_model.dart';
+import 'package:todo_mvvm/providers/item_providers.dart'; 
 import 'package:uuid/uuid.dart';
 
 import '../../../core/assets/assets_constants.dart';
@@ -38,8 +37,8 @@ class AddUpdateTodoScreen extends ConsumerWidget {
                     onTap: (){
                       context.pop();
                     },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 10),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40, horizontal: 10),
                       child: Icon(Icons.arrow_back_outlined,),
                     ),
                   )

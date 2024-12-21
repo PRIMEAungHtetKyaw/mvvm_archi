@@ -1,23 +1,28 @@
  
 import 'package:riverpod/riverpod.dart';
+import 'package:todo_mvvm/providers/profile_providers.dart';
 
 import '../domain/entities/user.dart';
 import '../domain/repositories/auth_repository.dart';
 import '../domain/repositories/item_repository.dart';
-import 'item_list_view_model.dart';
-import 'login_view_model.dart';
+import '../providers/auth_providers.dart';
+import '../providers/item_providers.dart'; 
+import 'register_view_model.dart';
+
 class ProfileViewModel extends AsyncNotifier<User> {
-  late final AuthRepository _authRepository;
-  late final ItemRepository _localRepository;
-  late final ItemRepository _remoteRepository;
+  AuthRepository? _authRepository;
+  ItemRepository? _localRepository;
+  ItemRepository? _remoteRepository;
 
   @override
   Future<User> build() async {
-    _authRepository = ref.read(authRepositoryProvider);
-    _localRepository = ref.read(localItemRepositoryProvider);
-    _remoteRepository = ref.read(remoteItemRepositoryProvider);
+    // Initialize repositories lazily
+    _authRepository ??= ref.watch(authRepositoryProvider);
+    _localRepository ??= ref.watch(localItemRepositoryProvider);
+    _remoteRepository ??= ref.watch(remoteItemRepositoryProvider);
 
-    final user = await _authRepository.getCurrentUser();
+    // Fetch the current user
+    final user = await _authRepository?.getCurrentUser();
     if (user == null) {
       throw Exception('No user is logged in.');
     }
@@ -26,31 +31,31 @@ class ProfileViewModel extends AsyncNotifier<User> {
 
   Future<void> logout() async {
     try {
-       await _localRepository.clearItems();
-      await _authRepository.logout();
-      ref.invalidate(itemListViewModelProvider);   
-      state = AsyncError(Exception('Logged out'), StackTrace.current); // Fix: Provide both arguments
+      // Clear local and remote items and logout
+      await _localRepository?.clearItems();
+      await _authRepository?.logout();
+
+      // Invalidate related providers
+      ref.invalidate(itemListViewModelProvider);
+      ref.invalidate(profileViewModelProvider);
+       ref.invalidate(registerViewModelProvider);
+      // Set the state to null (logged out state)
+      state = AsyncError(Exception('Logged out'), StackTrace.current);
     } catch (e, stackTrace) {
-      state = AsyncError(e, stackTrace); // Correct AsyncError instantiation
+      state = AsyncError(e, stackTrace);
     }
   }
 
-      Future<void> deleteAccount() async {
+  Future<void> deleteAccount() async {
     try {
-      // Clear Firestore data
-      await _remoteRepository.clearItems();
-
-      // Clear local database
-      await _localRepository.clearItems();
+      // Clear Firestore and local database
+      await _remoteRepository?.clearItems();
+      await _localRepository?.clearItems();
 
       // Delete the user account
-      await _authRepository.deleteAccount();
+      await _authRepository?.deleteAccount();
     } catch (e, stackTrace) {
       state = AsyncError(e, stackTrace);
     }
   }
 }
-
-// Provider for ProfileViewModel
-final profileViewModelProvider =
-    AsyncNotifierProvider<ProfileViewModel, User>(ProfileViewModel.new);

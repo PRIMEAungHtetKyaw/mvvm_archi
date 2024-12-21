@@ -6,7 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import 'package:todo_mvvm/core/assets/assets_constants.dart';
 import 'package:todo_mvvm/core/theme/colors.dart';
-import 'package:todo_mvvm/viewmodels/login_view_model.dart';
+import 'package:todo_mvvm/providers/auth_providers.dart'; 
 
 class SplashScreen extends ConsumerWidget {
   const SplashScreen({super.key});

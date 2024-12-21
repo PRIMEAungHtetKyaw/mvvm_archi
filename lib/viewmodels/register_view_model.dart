@@ -1,8 +1,8 @@
- 
 import 'package:riverpod/riverpod.dart';
-import 'package:todo_mvvm/viewmodels/login_view_model.dart';
+import 'package:todo_mvvm/providers/profile_providers.dart'; 
 
 import '../domain/repositories/auth_repository.dart';
+import '../providers/auth_providers.dart'; 
 
 class RegisterViewModel extends AsyncNotifier<bool> {
   late final AuthRepository _authRepository;
@@ -20,20 +20,18 @@ class RegisterViewModel extends AsyncNotifier<bool> {
   Future<void> register() async {
     if (password != confirmPassword) {
       // Handle password mismatch
-      state = AsyncError(Exception('Passwords do not match'), StackTrace.current);
+      state =
+          AsyncError(Exception('Passwords do not match'), StackTrace.current);
       return;
     }
 
     state = const AsyncLoading(); // Set loading state
     try {
       await _authRepository.register(email, password);
+      ref.invalidate(profileViewModelProvider); // Ensure profile data is reset
       state = const AsyncData(true); // Registration successful
     } catch (e, stackTrace) {
       state = AsyncError(e, stackTrace); // Registration failed
     }
   }
 }
-
-// Provider for RegisterViewModel
-final registerViewModelProvider =
-    AsyncNotifierProvider<RegisterViewModel, bool>(RegisterViewModel.new);

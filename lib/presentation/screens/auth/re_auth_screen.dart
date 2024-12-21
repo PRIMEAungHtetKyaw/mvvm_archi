@@ -1,4 +1,6 @@
 
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
@@ -8,7 +10,7 @@ import 'package:lottie/lottie.dart';
 import 'package:todo_mvvm/core/assets/assets_constants.dart';
 import 'package:todo_mvvm/core/theme/colors.dart';
 import 'package:todo_mvvm/presentation/widgets/common_textfield.dart';
-import 'package:todo_mvvm/viewmodels/login_view_model.dart';
+import 'package:todo_mvvm/providers/auth_providers.dart'; 
  
 final reauthPwdController = TextEditingController();
 

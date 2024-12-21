@@ -1,7 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
+ 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:todo_mvvm/data/repositories/auth_repository.dart';
+import 'package:todo_mvvm/providers/item_providers.dart';
+import 'package:todo_mvvm/providers/profile_providers.dart'; 
 import '../domain/repositories/auth_repository.dart';
+import '../providers/auth_providers.dart';  
  
 
 class LoginViewModel extends AsyncNotifier<bool> {
@@ -25,6 +27,10 @@ Future<bool> build() async {
     state = const AsyncLoading(); // Set loading state
     try {
       await _authRepository.login(email, password);
+      // Invalidate related providers to reset their state
+      ref.invalidate(profileViewModelProvider);
+      ref.invalidate(itemListViewModelProvider);
+ 
       state = const AsyncData(true); // Login successful
     } catch (e, stackTrace) {
       state = AsyncError(e, stackTrace); // Login failed
@@ -40,10 +46,3 @@ Future<bool> build() async {
   }
 }
 
-final loginViewModelProvider =
-    AsyncNotifierProvider<LoginViewModel, bool>(LoginViewModel.new);
-
-
-    final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return FirebaseAuthRepository(FirebaseAuth.instance);
-});

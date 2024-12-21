@@ -1,26 +1,45 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mockito/mockito.dart';
-import 'package:todo_mvvm/viewmodels/item_list_view_model.dart';
+import 'package:mockito/annotations.dart';
 import 'package:todo_mvvm/domain/entities/item.dart';
-
+import 'package:todo_mvvm/domain/entities/user.dart';
+import 'package:todo_mvvm/domain/repositories/auth_repository.dart';
+import 'package:todo_mvvm/domain/repositories/item_repository.dart';
+import 'package:todo_mvvm/providers/auth_providers.dart';
+import 'package:todo_mvvm/providers/item_providers.dart';
+import 'package:todo_mvvm/providers/profile_providers.dart';
 import 'mocks.mocks.dart';
 
+@GenerateMocks([AuthRepository, ItemRepository])
 void main() {
   late MockItemRepository mockLocalRepository;
   late MockItemRepository mockRemoteRepository;
+  late MockAuthRepository mockAuthRepository;
   late ProviderContainer container;
+
   setUp(() {
     mockLocalRepository = MockItemRepository();
     mockRemoteRepository = MockItemRepository();
+    mockAuthRepository = MockAuthRepository();
+
+    // Stub the getCurrentUser method for the mockAuthRepository
+    when(mockAuthRepository.getCurrentUser())
+        .thenAnswer((_) async =>   User(email: 'test@example.com'));
 
     container = ProviderContainer(
       overrides: [
+        authRepositoryProvider.overrideWithValue(mockAuthRepository),
         localItemRepositoryProvider.overrideWithValue(mockLocalRepository),
         remoteItemRepositoryProvider.overrideWithValue(mockRemoteRepository),
       ],
     );
   });
+
+  tearDown(() {
+    container.dispose();
+  });
+
   test('should fetch items successfully', () async {
     // Arrange
     final mockItems = [
@@ -28,48 +47,32 @@ void main() {
       Item(id: '2', title: 'Task 2', description: 'Description 2'),
     ];
 
-    // Stub both local and remote repositories
     when(mockLocalRepository.fetchItems()).thenAnswer((_) async => mockItems);
     when(mockRemoteRepository.fetchItems()).thenAnswer((_) async => mockItems);
 
     final viewModel = container.read(itemListViewModelProvider.notifier);
 
     // Act
-    final result = await viewModel.fetchItems();
+    await viewModel.build();
 
     // Assert
-    expect(result, mockItems); // Verify returned items match mock data
-    expect(viewModel.state, AsyncData(mockItems)); // Verify state is updated
-    verify(mockLocalRepository.fetchItems()).called(1); // Verify local call
-    verify(mockRemoteRepository.fetchItems()).called(1); // Verify remote call
+    expect(viewModel.state, AsyncData(mockItems)); 
+    verify(mockRemoteRepository.fetchItems()).called(2);
   });
 
-  test(
-      'should sync items from Firestore to local repository and fetch them locally',
-      () async {
+  
+  test('should handle user logout and clear local items', () async {
     // Arrange
-    final remoteItems = [
-      Item(
-          id: '1', title: 'Remote Task 1', description: 'Remote Description 1'),
-      Item(
-          id: '2', title: 'Remote Task 2', description: 'Remote Description 2'),
-    ];
+    when(mockAuthRepository.logout()).thenAnswer((_) async {});
+    when(mockLocalRepository.clearItems()).thenAnswer((_) async {});
 
-    // Stub remote fetch
-    when(mockRemoteRepository.fetchItems())
-        .thenAnswer((_) async => remoteItems);
-
-    // Stub local repository to accept additions and fetch data
-    when(mockLocalRepository.addItem(any)).thenAnswer((_) async {});
-    when(mockLocalRepository.fetchItems()).thenAnswer((_) async => remoteItems);
-
-    final viewModel = container.read(itemListViewModelProvider.notifier);
+    final profileViewModel = container.read(profileViewModelProvider.notifier);
 
     // Act
-    await viewModel.build(); // Triggers the sync and fetch logic
+    await profileViewModel.logout();
 
     // Assert
-    verify(mockRemoteRepository.fetchItems()).called(2);
-    expect(viewModel.state, AsyncData(remoteItems)); // Ensure state is updated
+    verify(mockAuthRepository.logout()).called(1);
+    verify(mockLocalRepository.clearItems()).called(1);
   });
 }
