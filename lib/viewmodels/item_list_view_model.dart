@@ -6,15 +6,15 @@ import '../data/repositories/drift_item_repository.dart';
 import '../data/repositories/item_repository.dart';
 import '../domain/entities/item.dart';
 import '../domain/repositories/item_repository.dart';
-
 class ItemListViewModel extends AsyncNotifier<List<Item>> {
-  late final ItemRepository _remoteRepository;
-  late final ItemRepository _localRepository;
+  ItemRepository? _remoteRepository;
+  ItemRepository? _localRepository;
 
   @override
   Future<List<Item>> build() async {
-    _remoteRepository = ref.read(remoteItemRepositoryProvider);
-    _localRepository = ref.read(localItemRepositoryProvider);
+    // Initialize repositories lazily
+    _remoteRepository ??= ref.read(remoteItemRepositoryProvider);
+    _localRepository ??= ref.read(localItemRepositoryProvider);
 
     await _syncFromFirestore(); // Sync Firestore data to Drift
     return fetchItems();
@@ -24,7 +24,7 @@ class ItemListViewModel extends AsyncNotifier<List<Item>> {
     state = const AsyncLoading();
     try {
       // Fetch data from the local repository (Drift)
-      final items = await _localRepository.fetchItems();
+      final items = await _localRepository!.fetchItems();
       state = AsyncData(items);
       return items;
     } catch (e, stackTrace) {
@@ -36,10 +36,10 @@ class ItemListViewModel extends AsyncNotifier<List<Item>> {
   Future<void> addItem(Item item) async {
     try {
       // Add to local cache (Drift)
-      await _localRepository.addItem(item);
+      await _localRepository!.addItem(item);
 
       // Push the change to Firestore
-      await _remoteRepository.addItem(item);
+      await _remoteRepository!.addItem(item);
 
       await fetchItems(); // Refresh UI
     } catch (e, stackTrace) {
@@ -50,10 +50,10 @@ class ItemListViewModel extends AsyncNotifier<List<Item>> {
   Future<void> deleteItem(String id) async {
     try {
       // Delete from local cache (Drift)
-      await _localRepository.deleteItem(id);
+      await _localRepository!.deleteItem(id);
 
       // Push the deletion to Firestore
-      await _remoteRepository.deleteItem(id);
+      await _remoteRepository!.deleteItem(id);
 
       await fetchItems(); // Refresh UI
     } catch (e, stackTrace) {
@@ -64,10 +64,10 @@ class ItemListViewModel extends AsyncNotifier<List<Item>> {
   Future<void> updateItem(Item item) async {
     try {
       // Update local cache (Drift)
-      await _localRepository.updateItem(item);
+      await _localRepository!.updateItem(item);
 
       // Push the update to Firestore
-      await _remoteRepository.updateItem(item);
+      await _remoteRepository!.updateItem(item);
 
       await fetchItems(); // Refresh UI
     } catch (e, stackTrace) {
@@ -76,20 +76,21 @@ class ItemListViewModel extends AsyncNotifier<List<Item>> {
   }
 
   Future<void> _syncFromFirestore() async {
-  try {
-    // Fetch remote data from Firestore
-    final remoteItems = await _remoteRepository.fetchItems();
+    try {
+      // Fetch remote data from Firestore
+      final remoteItems = await _remoteRepository!.fetchItems();
 
-    // Sync Firestore data to local database (Drift)
-    for (final item in remoteItems) {
-      await _localRepository.addItem(item);
+      // Sync Firestore data to local database (Drift)
+      for (final item in remoteItems) {
+        await _localRepository!.addItem(item);
+      }
+    } catch (e) {
+      // Handle offline or error case
+      print('Error syncing from Firestore: $e');
     }
-  } catch (e) {
-    // Handle offline or error case
-    print('Error syncing from Firestore: $e');
   }
 }
-}
+
 
 // Define the provider for ItemListViewModel
 final itemListViewModelProvider =

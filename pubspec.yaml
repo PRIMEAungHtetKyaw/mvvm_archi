@@ -48,7 +48,8 @@ dependencies:
   drift: ^2.22.1
   sqlite3_flutter_libs: ^0.5.28
   path: ^1.9.0
-  
+  lottie: ^3.1.2
+  gap: ^3.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -61,7 +62,7 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   build_runner: ^2.4.10
   drift_dev: ^2.22.1
-  
+  mockito: ^5.4.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -75,7 +76,9 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
+  assets:
+    - assets/lotties/
+    - assets/images/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

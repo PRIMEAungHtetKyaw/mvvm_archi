@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:todo_mvvm/presentation/screens/auth/register_screen.dart';
 import 'package:todo_mvvm/presentation/screens/main/main_screen.dart';
@@ -12,35 +13,66 @@ final router = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => const SplashScreen(),
+      pageBuilder: (context, state) {
+        return _buildSlideTransition(context, const SplashScreen());
+      },
     ),
     GoRoute(
       path: '/login',
-      builder: (context, state) => const LoginScreen(),
+      pageBuilder: (context, state) {
+        return _buildSlideTransition(context, const LoginScreen());
+      },
     ),
     GoRoute(
       path: '/register',
-      builder: (context, state) => const RegisterScreen(),
+      pageBuilder: (context, state) {
+        return _buildSlideTransition(context, const RegisterScreen());
+      },
     ),
     GoRoute(
       path: '/main',
-      builder: (context, state) => const MainScreen(),
+      pageBuilder: (context, state) {
+        return _buildSlideTransition(context, const MainScreen());
+      },
     ),
     GoRoute(
       path: '/add',
-      builder: (context, state) => const AddUpdateTodoScreen(),
-    ),
-
-    GoRoute(
-      path: '/edit',
-      builder: (context, state) {
-        final item = state.extra as Item;
-        return AddUpdateTodoScreen(item: item);
+      pageBuilder: (context, state) {
+        return _buildSlideTransition(context, const AddUpdateTodoScreen());
       },
     ),
-     GoRoute(
+    GoRoute(
+      path: '/edit',
+      pageBuilder: (context, state) {
+        final item = state.extra as Item;
+        return _buildSlideTransition(context, AddUpdateTodoScreen(item: item));
+      },
+    ),
+    GoRoute(
       path: '/profile',
-      builder: (context, state) => const ProfileScreen(),
+      pageBuilder: (context, state) {
+        return _buildSlideTransition(context, const ProfileScreen());
+      },
     ),
   ],
 );
+
+/// Custom slide transition builder
+Page _buildSlideTransition(BuildContext context, Widget child) {
+  return CustomTransitionPage(
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0); // Slide in from the right
+      const end = Offset.zero; // To center
+      const curve = Curves.easeInOut;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(
+        position: offsetAnimation,
+        child: child,
+      );
+    },
+  );
+}
