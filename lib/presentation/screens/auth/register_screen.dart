@@ -122,7 +122,7 @@ class RegisterScreen extends ConsumerWidget {
                     },
                     child: registerState is AsyncLoading
                         ? const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 50,  ),
+                            padding: EdgeInsets.symmetric(horizontal: 50,vertical: 5  ),
                             child: CircularProgressIndicator(
                               color: AppColors.whiteColor,
                             ),

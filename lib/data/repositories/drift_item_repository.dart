@@ -1,7 +1,6 @@
 import '../../domain/entities/item.dart';
 import '../../domain/repositories/item_repository.dart';
-import '../local/database.dart';
-import '../local/item_dao.dart';
+import '../local/database.dart'; 
 
 class DriftItemRepository implements ItemRepository {
   final AppDatabase _db;
@@ -37,5 +36,9 @@ class DriftItemRepository implements ItemRepository {
   @override
   Future<void> deleteItem(String id) async {
     await (_db.delete(_db.items)..where((tbl) => tbl.id.equals(id))).go();
+  }
+   @override
+  Future<void> clearItems() async {
+    await _db.delete(_db.items).go();  
   }
 }

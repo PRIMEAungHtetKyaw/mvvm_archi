@@ -51,4 +51,13 @@ class FirestoreItemRepository implements ItemRepository {
       'description': item.description,
     });
   }
+  
+  @override
+  Future<void> clearItems() async{
+     final snapshot = await _userItemsCollection.get();
+
+  for (final doc in snapshot.docs) {
+    await doc.reference.delete(); // Delete each document
+  }
+  }
 }

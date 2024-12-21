@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -5,16 +6,52 @@ import 'package:lottie/lottie.dart';
 import 'package:todo_mvvm/viewmodels/profile_view_model.dart';
 
 import '../../../core/assets/assets_constants.dart';
-import '../../../core/theme/theme_controller.dart'; 
+import '../../../core/theme/theme_controller.dart';
+import '../../../viewmodels/login_view_model.dart';
+import '../../widgets/confirm_dialog.dart'; 
+
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
+  Future<void> _showPasswordDialog(
+      BuildContext context, WidgetRef ref, Function(String password) onConfirm) async {
+    final passwordController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Reauthenticate'),
+          content: TextField(
+            controller: passwordController,
+            obscureText: true,
+            decoration: const InputDecoration(labelText: 'Enter your password'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final password = passwordController.text;
+                Navigator.pop(context);
+                onConfirm(password);
+              },
+              child: const Text('Confirm'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profileViewModel = ref.watch(profileViewModelProvider);
-    final themeMode = ref.watch(themeControllerProvider); // Watch current ThemeMode
-    final themeController = ref.read(themeControllerProvider.notifier); // Access the controller
+    final themeMode = ref.watch(themeControllerProvider);
+    final themeController = ref.read(themeControllerProvider.notifier);
 
     return Scaffold(
       body: profileViewModel.when(
@@ -26,7 +63,6 @@ class ProfileScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Back Icon and Profile Image
                     Stack(
                       children: [
                         Center(
@@ -69,7 +105,7 @@ class ProfileScreen extends ConsumerWidget {
                           onChanged: (isDarkMode) {
                             themeController.setThemeMode(
                               isDarkMode ? AppThemeMode.dark : AppThemeMode.light,
-                            ); // Update the theme
+                            );
                           },
                         ),
                       ],
@@ -77,10 +113,9 @@ class ProfileScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-
-              // Logout Button
+           // Logout Button
               SizedBox(
-                width: double.infinity,  
+                width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
                     ref.read(profileViewModelProvider.notifier).logout();
@@ -92,6 +127,34 @@ class ProfileScreen extends ConsumerWidget {
                   child: const Text('Logout'),
                 ),
               ),
+              // Delete Account Button
+              const SizedBox(height: 8),
+               SizedBox(
+  width: double.infinity,
+  child: ElevatedButton(
+    onPressed: () async {
+      final reauthResult = await context.push('/reauthenticate'); // Navigate to reauthentication screen
+      if (reauthResult == true) {
+        // If reauthentication succeeded
+        try {
+          await ref.read(profileViewModelProvider.notifier).deleteAccount();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Account deleted successfully.')),
+          );
+          context.go('/login');
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e')),
+          );
+        }
+      }
+    },
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.red,
+    ),
+    child: const Text('Delete Account'),
+  ),
+),
             ],
           ),
         ),

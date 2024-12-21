@@ -11,11 +11,15 @@ class LoginViewModel extends AsyncNotifier<bool> {
   String password = '';
 
   @override
-  Future<bool> build() async {
-    // Initialize AuthRepository here
-    _authRepository = ref.read(authRepositoryProvider); // Use your DI setup
-    return false; // Default state: not logged in
-  }
+Future<bool> build() async {
+  _authRepository = ref.watch(authRepositoryProvider);
+
+  // Skip reinitializing if the user is already logged out
+  final user = await _authRepository.getCurrentUser();
+  if (user == null) return false;
+
+  return false;
+}
 
   Future<void> login() async {
     state = const AsyncLoading(); // Set loading state
@@ -24,6 +28,14 @@ class LoginViewModel extends AsyncNotifier<bool> {
       state = const AsyncData(true); // Login successful
     } catch (e, stackTrace) {
       state = AsyncError(e, stackTrace); // Login failed
+    }
+  }
+
+   Future<void> reauthenticate(String email, String password) async {
+    try {
+      await _authRepository.reauthenticate(email, password);
+    } catch (e) {
+      throw Exception('Reauthentication failed: $e');
     }
   }
 }

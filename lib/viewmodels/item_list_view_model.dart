@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart'; 
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:todo_mvvm/viewmodels/login_view_model.dart'; 
 import '../data/local/database.dart';
 import '../data/repositories/drift_item_repository.dart'; 
 import '../data/repositories/item_repository.dart';
@@ -15,7 +16,8 @@ class ItemListViewModel extends AsyncNotifier<List<Item>> {
     // Initialize repositories lazily
     _remoteRepository ??= ref.read(remoteItemRepositoryProvider);
     _localRepository ??= ref.read(localItemRepositoryProvider);
-
+    final user = await ref.read(authRepositoryProvider).getCurrentUser();
+     if (user == null) return [];
     await _syncFromFirestore(); // Sync Firestore data to Drift
     return fetchItems();
   }

@@ -6,6 +6,7 @@ import 'package:todo_mvvm/presentation/screens/profile/profile_screen.dart';
 
 import '../../domain/entities/item.dart';
 import '../../presentation/screens/auth/login_screen.dart';
+import '../../presentation/screens/auth/re_auth_screen.dart';
 import '../../presentation/screens/splash/splash_screen.dart';
 import '../../presentation/screens/todo/add_upd_todo_screen.dart';
 
@@ -53,6 +54,11 @@ final router = GoRouter(
       pageBuilder: (context, state) {
         return _buildSlideTransition(context, const ProfileScreen());
       },
+    ),
+
+      GoRoute(
+      path: '/reauthenticate',
+      builder: (context, state) => const ReauthenticateScreen(),
     ),
   ],
 );

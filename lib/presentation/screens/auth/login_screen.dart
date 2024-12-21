@@ -103,7 +103,7 @@ class LoginScreen extends ConsumerWidget {
                       },
                       child: loginState is AsyncLoading
                           ? const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 5 ),
                               child: CircularProgressIndicator(color: AppColors.whiteColor,),
                             )
                           : const Padding(
